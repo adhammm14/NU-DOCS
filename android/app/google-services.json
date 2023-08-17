@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "257967178081",
+    "project_id": "nu-docs",
+    "storage_bucket": "nu-docs.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:257967178081:android:da4be840d51a4448c80520",
+        "android_client_info": {
+          "package_name": "com.example.nu_sources"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "257967178081-cb51lgjupq8f4mi1h8p1klveadee505l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.nu_sources",
+            "certificate_hash": "237e79216af6d0480408f27ce7b6b5265b192ea7"
+          }
+        },
+        {
+          "client_id": "257967178081-d5fegmjko8fgi776ul5elknkou0qnp43.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAbRR2AqJqH13gZN4g7oE5c-ZIa5HPnTP4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "257967178081-d5fegmjko8fgi776ul5elknkou0qnp43.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
