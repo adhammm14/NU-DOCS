@@ -1,14 +1,12 @@
 import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:nu_sources/modules/HomePage.dart';
+import 'package:nu_sources/modules/app_pages/AddPostPage.dart';
 import 'package:nu_sources/shared/app_cubit/app_cubit.dart';
 import 'package:nu_sources/shared/styles/colors.dart';
 
-import '../modules/AddPostPage.dart';
 import '../shared/app_cubit/app_states.dart';
-import '../shared/components/components.dart';
 
 class HomeLayout extends StatefulWidget {
   const HomeLayout({super.key});
@@ -23,7 +21,8 @@ class _HomeLayoutState extends State<HomeLayout> {
     return BlocProvider(
       create: (BuildContext context) => AppCubit(context),
       child: BlocConsumer<AppCubit, AppStates>(
-        listener: (context, state){
+        listener: (context, state) async {
+          AppCubit cubit = AppCubit.get(context);
           if(state is AddPostPageState){
             Navigator.push(context, MaterialPageRoute(builder: (context) => AddPostPage()));
           }

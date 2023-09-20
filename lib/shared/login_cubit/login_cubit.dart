@@ -36,7 +36,6 @@ class LoginCubit extends Cubit<LoginStates>{
   void createAccount(
       {required String uId, required String name, required String email, required String phone}) {
     UserModel userModel = UserModel(image: "https://cdn-icons-png.flaticon.com/128/3177/3177440.png",bio: "",uId: uId, name: name, email: email, phone: phone);
-
     FirebaseFirestore.instance
         .collection('users')
         .doc(uId)
@@ -71,5 +70,4 @@ class LoginCubit extends Cubit<LoginStates>{
   void changeHidden(){
     hidden = !hidden;
   }
-
 }
