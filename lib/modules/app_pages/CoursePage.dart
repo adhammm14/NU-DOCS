@@ -60,7 +60,7 @@ class _CoursePageState extends State<CoursePage> {
                   LikeButton(
                     size: 50,
                     circleColor: CircleColor(start: Colors.red, end: errorColor),
-                    isLiked: cubit.currentCourse!.favorite,
+                    isLiked: cubit.inFav,
                     likeBuilder: (bool isLiked){
                       return Icon(
                           Icons.favorite,
@@ -69,14 +69,15 @@ class _CoursePageState extends State<CoursePage> {
                       );
                     },
                     onTap: (v) async{
-                      if(cubit.currentCourse!.favorite!){
-                        cubit.addCourseToFav(cubit.currentCourse!);
-                        AppCubit.get(context).getCurrentCourseData(courseModel!.id!);
-                        return false;
+                      cubit.checkFavCourse(cubit.currentCourse!);
+                      if(cubit.inFav!){
+                        cubit.delCourseToFav(cubit.currentCourse!);
+                        cubit.getCurrentCourseData(cubit.currentCourse!.id!);
+                        return cubit.inFav!;
                       }else{
                         cubit.addCourseToFav(cubit.currentCourse!);
-                        AppCubit.get(context).getCurrentCourseData(courseModel!.id!);
-                        return true;
+                        cubit.getCurrentCourseData(cubit.currentCourse!.id!);
+                        return cubit.inFav!;
                       }
                     },
                   ),
@@ -201,7 +202,7 @@ class _CoursePageState extends State<CoursePage> {
                                                 const SizedBox(width: 5,),
                                                 SvgPicture.asset("assets/icons/like.svg", width: 18,),
                                                 const SizedBox(width: 5,),
-                                                Text(cubit.allCourseFiles[index].likes!,style: const TextStyle(color: Colors.blue,fontSize: 12, fontWeight: FontWeight.w500),),
+                                                Text(cubit.allCourseFiles[index].likes!.length.toString(),style: const TextStyle(color: Colors.blue,fontSize: 12, fontWeight: FontWeight.w500),),
                                                 const SizedBox(width: 15,),
                                                 SvgPicture.asset("assets/icons/star.svg", width: 18, color: cubit.allCourseFiles[index].isVerifed! ?Colors.orangeAccent : blackColor.withOpacity(0.1),),
                                                 const SizedBox(width: 5,),

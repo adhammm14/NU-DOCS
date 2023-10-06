@@ -12,5 +12,6 @@ Color mainColor = const Color(0xff3D87C4);
 Color errorColor = const Color(0xffc43d3d);
 Color lightGreyColor = const Color(0xffeeeeee);
 Color heavyGreyColor = const Color(0xffe5e5e5);
+Color semiGreyColor = Colors.grey.withOpacity(0.6);
 Color blackColor = const Color(0xff0F0606);
 Color whiteColor = const Color(0xffFAF9F9);

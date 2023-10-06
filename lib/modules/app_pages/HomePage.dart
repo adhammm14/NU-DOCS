@@ -18,44 +18,53 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (BuildContext context) => AppCubit(context)..emit(AppInitialState()),
+      create: (BuildContext context) => AppCubit(context)..emit(AppInitialState())..getUserData(),
       child: BlocConsumer<AppCubit,AppStates>(
         listener: (context,state){},
         builder: (context,state){
           AppCubit cubit = AppCubit.get(context);
           var screenWidth = MediaQuery.of(context).size.width;
           var screenHeight = MediaQuery.of(context).size.height;
-          return Scaffold(
-            appBar: AppBar(
-              elevation: 0,
-              backgroundColor: Colors.transparent,
-              titleSpacing: 15,
-              title: const CircleAvatar(
-                radius: 25,
+          return ConditionalBuilder (
+            condition: cubit.model != null || state is GetUserSuccessfullyState,
+            builder: (context) => Scaffold(
+              appBar: AppBar(
+                automaticallyImplyLeading: false,
+                elevation: 0,
                 backgroundColor: Colors.transparent,
-                backgroundImage: NetworkImage("https://cdn-icons-png.flaticon.com/128/4333/4333609.png"),
+                titleSpacing: 15,
+                title: Container(
+                  width: 50,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: mainColor,
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(cubit.model!.gender! == "male" ? 13 : 7.5),
+                    child: Image.asset("assets/images/${cubit!.model!.image!}",fit: BoxFit.cover,),
+                  ),
+                )
               ),
-            ),
-            body: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 10,),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("Recently Courses",style: TextStyle(color: blackColor,fontSize: 23,fontFamily: "LeagueSpartan"),),
-                        TextButton(
-                          onPressed: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=>const AllCoursesPage()));
-                          },
-                          child: Text("See All",style: TextStyle(color: mainColor,fontSize: 15,fontFamily: "LeagueSpartan"),),
-                        ),
-                      ],
-                    ),
-                    ConditionalBuilder(
+              body: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 10,),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("Recently Courses",style: TextStyle(color: blackColor,fontSize: 23,fontFamily: "LeagueSpartan"),),
+                          TextButton(
+                            onPressed: (){
+                              Navigator.push(context, MaterialPageRoute(builder: (context)=>const AllCoursesPage()));
+                            },
+                            child: Text("See All",style: TextStyle(color: mainColor,fontSize: 15,fontFamily: "LeagueSpartan"),),
+                          ),
+                        ],
+                      ),
+                      ConditionalBuilder(
                         condition: cubit.recentlyCourses.isNotEmpty,
                         builder: (context) => Expanded(
                           flex: 1,
@@ -123,92 +132,100 @@ class HomePage extends StatelessWidget {
                         fallback: (context) => Center(child: Column(children:[
                           Image.asset("assets/images/box.png",width: 150,),
                           const SizedBox(height: 10,),
-                          Text("Recently courses will be here!",style: TextStyle(color: blackColor.withOpacity(0.7),fontSize: 18,fontFamily: "LeagueSpartan"),)
+                          Text("Recently courses will be here!",style: TextStyle(color: blackColor.withOpacity(0.7),fontSize: 18,fontFamily: "LeagueSpartan"),),
                         ]),
                         ),
-                    ),
-                    const SizedBox(height: 10,),
-                    Text("New",style: TextStyle(color: blackColor,fontSize: 23,fontFamily: "LeagueSpartan"),),
-                    const SizedBox(height: 10,),
-                    Expanded(
-                      flex: 2,
-                      child: ListView.builder(
-                          itemCount: colors.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8.0),
-                              child: InkWell(
-                                onTap: (){
-                                },
-                                child: Container(
-                                  height: screenHeight/9.5,
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(15),
-                                      color: lightGreyColor
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        height: double.infinity,
-                                        width: 80,
-                                        decoration: const BoxDecoration(
-                                            borderRadius: BorderRadius.only(topLeft: Radius.circular(15),bottomLeft: Radius.circular(15))
-                                        ),
-                                        child: Center(
-                                          child: Stack(
-                                              children: [
-                                                SvgPicture.asset(
-                                                  "assets/icons/file.svg",
-                                                  width: 60,
-                                                  color: colors[index],
-                                                ),
-                                                Positioned(
-                                                  right: 11,
-                                                  bottom: 10,
-                                                  child: Text(
-                                                    "CSCI101",
-                                                    style: TextStyle(fontSize: 20,color: whiteColor.withOpacity(0.5),fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 10,),
+                      Text("New",style: TextStyle(color: blackColor,fontSize: 23,fontFamily: "LeagueSpartan"),),
+                      const SizedBox(height: 10,),
+                      Expanded(
+                        flex: 2,
+                        child: ListView.builder(
+                            itemCount: colors.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                child: InkWell(
+                                  onTap: (){
+                                  },
+                                  child: Container(
+                                    height: screenHeight/9.5,
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(15),
+                                        color: lightGreyColor
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          height: double.infinity,
+                                          width: 80,
+                                          decoration: const BoxDecoration(
+                                              borderRadius: BorderRadius.only(topLeft: Radius.circular(15),bottomLeft: Radius.circular(15))
+                                          ),
+                                          child: Center(
+                                            child: Stack(
+                                                children: [
+                                                  SvgPicture.asset(
+                                                    "assets/icons/file.svg",
+                                                    width: 60,
+                                                    color: colors[index],
                                                   ),
-                                                ),
-                                              ]
+                                                  Positioned(
+                                                    right: 11,
+                                                    bottom: 10,
+                                                    child: Text(
+                                                      "CSCI101",
+                                                      style: TextStyle(fontSize: 20,color: whiteColor.withOpacity(0.5),fontWeight: FontWeight.w700),
+                                                    ),
+                                                  ),
+                                                ]
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(width: 10,),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            const Spacer(),
-                                            Text(titles[index],maxLines:1,overflow: TextOverflow.ellipsis,style: TextStyle(color: blackColor,fontSize: 17, fontWeight: FontWeight.w700),),
-                                            const SizedBox(height: 4,),
-                                            Text(users[index],maxLines:1,overflow: TextOverflow.ellipsis,style: TextStyle(color: blackColor.withOpacity(0.2),fontSize: 12, fontWeight: FontWeight.w400),),
-                                            const Spacer(),
-                                            Row(
-                                              children: [
-                                                const SizedBox(width: 5,),
-                                                SvgPicture.asset("assets/icons/like.svg", width: 18,),
-                                                const SizedBox(width: 5,),
-                                                Text(numbers[index],style: const TextStyle(color: Colors.blue,fontSize: 12, fontWeight: FontWeight.w500),),
-                                                const SizedBox(width: 15,),
-                                                SvgPicture.asset("assets/icons/star.svg", width: 18, color: verified[index] ?Colors.orangeAccent : blackColor.withOpacity(0.1),),
-                                                const SizedBox(width: 5,),
-                                                Text(verified[index] ?"Verified" : "Not Verified",style: TextStyle(color: verified[index] ?Colors.orangeAccent : blackColor.withOpacity(0.1),fontSize: 12, fontWeight: FontWeight.w500),),
+                                        const SizedBox(width: 10,),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              const Spacer(),
+                                              Text(titles[index],maxLines:1,overflow: TextOverflow.ellipsis,style: TextStyle(color: blackColor,fontSize: 17, fontWeight: FontWeight.w700),),
+                                              const SizedBox(height: 4,),
+                                              Text(users[index],maxLines:1,overflow: TextOverflow.ellipsis,style: TextStyle(color: blackColor.withOpacity(0.2),fontSize: 12, fontWeight: FontWeight.w400),),
+                                              const Spacer(),
+                                              Row(
+                                                children: [
+                                                  const SizedBox(width: 5,),
+                                                  SvgPicture.asset("assets/icons/like.svg", width: 18,),
+                                                  const SizedBox(width: 5,),
+                                                  Text(numbers[index],style: const TextStyle(color: Colors.blue,fontSize: 12, fontWeight: FontWeight.w500),),
+                                                  const SizedBox(width: 15,),
+                                                  SvgPicture.asset("assets/icons/star.svg", width: 18, color: verified[index] ?Colors.orangeAccent : blackColor.withOpacity(0.1),),
+                                                  const SizedBox(width: 5,),
+                                                  Text(verified[index] ?"Verified" : "Not Verified",style: TextStyle(color: verified[index] ?Colors.orangeAccent : blackColor.withOpacity(0.1),fontSize: 12, fontWeight: FontWeight.w500),),
 
-                                              ],
-                                            ),
-                                            const Spacer(),
-                                          ],
-                                        ),
-                                      )
-                                    ],
+                                                ],
+                                              ),
+                                              const Spacer(),
+                                            ],
+                                          ),
+                                        )
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            );
-                          }),
-                    ),
-                  ],
+                              );
+                            }),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            fallback: ( context) => Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(
+                  color: mainColor,
                 ),
               ),
             ),

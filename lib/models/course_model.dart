@@ -4,7 +4,6 @@ class CourseModel {
   String? code;
   String? code2;
   String? core;
-  bool? favorite = false;
 
   CourseModel({
     required this.name,
@@ -12,7 +11,6 @@ class CourseModel {
     required this.code,
     required this.code2,
     required this.core,
-    required this.favorite,
   });
 
   CourseModel.fromJson(Map<String, dynamic> json) {
@@ -21,7 +19,6 @@ class CourseModel {
     code = json['code'];
     code2 = json['2nd code'];
     core = json['core'];
-    favorite = json['favorite'];
   }
 
   Map<String, dynamic> toMap() {
@@ -31,7 +28,6 @@ class CourseModel {
       'code': code,
       '2nd code': code2,
       'core' : core,
-      'favorite' : favorite,
     };
   }
 }

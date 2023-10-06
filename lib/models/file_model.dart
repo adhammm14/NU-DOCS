@@ -5,10 +5,9 @@ class FileModel {
   String? courseCode;
   String? courseCode2;
   String? author;
-  String? likes;
+  List? likes;
   String? date;
   bool? isVerifed;
-  bool? isLiked;
 
   FileModel({
     required this.id,
@@ -20,7 +19,6 @@ class FileModel {
     required this.likes,
     required this.date,
     required this.isVerifed,
-    required this.isLiked,
   });
 
   FileModel.fromJson(Map<String, dynamic> json) {
@@ -33,7 +31,6 @@ class FileModel {
     likes = json['likes'];
     date = json['date'];
     isVerifed = json['isVerifed'];
-    isLiked = json['isLiked'];
   }
 
   Map<String, dynamic> toMap() {
@@ -47,7 +44,6 @@ class FileModel {
       'likes' : likes,
       'date' : date,
       'isVerifed' : isVerifed,
-      'isLiked' : isLiked,
     };
   }
 }

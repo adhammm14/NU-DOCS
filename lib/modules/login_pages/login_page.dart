@@ -22,6 +22,7 @@ class LoginPage extends StatelessWidget {
           listener: (context,state){},
           builder: (context,state){
             LoginCubit cubit = LoginCubit.get(context);
+            var screenWidth = MediaQuery.of(context).size.width;
             return Scaffold(
               body: SingleChildScrollView(
                 child: Column(
@@ -31,8 +32,8 @@ class LoginPage extends StatelessWidget {
                       width: double.infinity,
                       child: Stack(
                         children: [
-                          Image.network(
-                            "https://nu.edu.eg/sites/default/files/2022-09/slider-360.jpg",
+                          Image.asset(
+                            "assets/images/BG.jpeg",
                             width: double.infinity,
                             height: double.infinity,
                             fit: BoxFit.cover,
@@ -78,22 +79,36 @@ class LoginPage extends StatelessWidget {
                           children: [
                             TextFormField(
                               controller: emailController,
-                              cursorColor: Colors.grey.withOpacity(0.8),
+                              cursorColor: semiGreyColor,
                               decoration: InputDecoration(
-                                labelText: "Email",
-                                labelStyle: TextStyle(
-                                    color: Colors.grey.withOpacity(0.8), fontSize: 18),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                  borderSide:
-                                  const BorderSide(style: BorderStyle.solid),
+                                hintText: "Email",
+                                hintStyle: TextStyle(
+                                    color: semiGreyColor,
+                                    fontSize: 18,
+                                    fontFamily: "LeagueSpartan"
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(15),
                                   borderSide: BorderSide(
                                     style: BorderStyle.solid,
                                     width: 1,
-                                    color: Colors.grey.withOpacity(0.8),
+                                    color: semiGreyColor,
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  borderSide: BorderSide(
+                                    style: BorderStyle.solid,
+                                    width: 1,
+                                    color: semiGreyColor,
+                                  ),
+                                ),
+                                errorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  borderSide: BorderSide(
+                                    style: BorderStyle.solid,
+                                    width: 1,
+                                    color: errorColor,
                                   ),
                                 ),
                               ),
@@ -101,7 +116,36 @@ class LoginPage extends StatelessWidget {
                                 if (value!.isEmpty ||
                                     !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,}$')
                                         .hasMatch(value)) {
-                                  return "Please Enter Valid Email";
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Container(
+                                        height: 50,
+                                        decoration: BoxDecoration(
+                                            color: errorColor,
+                                            borderRadius: const BorderRadius.all(Radius.circular(10))),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "Error!",
+                                                style: TextStyle(
+                                                    color: whiteColor,
+                                                    fontSize: 20,
+                                                    fontFamily: "LeagueSpartan"),
+                                              ),
+                                              const Text("Email or password not correct."),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor: Colors.transparent,
+                                      elevation: 0,
+                                    ),
+                                  );
+                                  return "";
                                 }
                                 return null;
                               },
@@ -111,23 +155,38 @@ class LoginPage extends StatelessWidget {
                             ),
                             TextFormField(
                               controller: passController,
-                              cursorColor: heavyGreyColor,
+                              cursorColor: semiGreyColor,
                               obscureText: cubit.hidden,
                               decoration: InputDecoration(
-                                labelText: "Password",
-                                labelStyle:
-                                TextStyle(color: heavyGreyColor, fontSize: 18),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                  borderSide:
-                                  const BorderSide(style: BorderStyle.solid),
+                                hintText: "Password",
+                                hintStyle: TextStyle(
+                                    color: semiGreyColor,
+                                    fontSize: 18,
+                                    fontFamily: "LeagueSpartan"
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(15),
                                   borderSide: BorderSide(
-                                      style: BorderStyle.solid,
-                                      width: 1,
-                                      color: heavyGreyColor),
+                                    style: BorderStyle.solid,
+                                    width: 1,
+                                    color: semiGreyColor,
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  borderSide: BorderSide(
+                                    style: BorderStyle.solid,
+                                    width: 1,
+                                    color: semiGreyColor,
+                                  ),
+                                ),
+                                errorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  borderSide: BorderSide(
+                                    style: BorderStyle.solid,
+                                    width: 1,
+                                    color: errorColor,
+                                  ),
                                 ),
                                 suffixIcon: Padding(
                                   padding: const EdgeInsets.only(right: 10.0),
@@ -152,7 +211,36 @@ class LoginPage extends StatelessWidget {
                               ),
                               validator: (value) {
                                 if (value!.isEmpty || value.length < 8) {
-                                  return "Please Enter More than 8 Characters";
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Container(
+                                        height: 50,
+                                        decoration: BoxDecoration(
+                                            color: errorColor,
+                                            borderRadius: const BorderRadius.all(Radius.circular(10))),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "Error!",
+                                                style: TextStyle(
+                                                    color: whiteColor,
+                                                    fontSize: 20,
+                                                    fontFamily: "LeagueSpartan"),
+                                              ),
+                                              const Text("Email or password not correct."),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor: Colors.transparent,
+                                      elevation: 0,
+                                    ),
+                                  );
+                                  return "";
                                 }
                                 return null;
                               },
@@ -190,7 +278,8 @@ class LoginPage extends StatelessWidget {
                                       style: TextStyle(
                                           color: whiteColor,
                                           fontSize: 20,
-                                          fontWeight: FontWeight.w600),
+                                          fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -198,61 +287,6 @@ class LoginPage extends StatelessWidget {
                               fallback: (context) => Center(child: CircularProgressIndicator(
                                 color: mainColor,
                               ),),
-                            ),
-                            const SizedBox(
-                              height: 20,
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Container(
-                                  height: 1,
-                                  width: 120,
-                                  color: heavyGreyColor,
-                                ),
-                                const Text(
-                                  "Or login with",
-                                  style: TextStyle(
-                                      fontSize: 18, fontWeight: FontWeight.w600),
-                                ),
-                                Container(
-                                  height: 1,
-                                  width: 120,
-                                  color: heavyGreyColor,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 20,
-                            ),
-                            Container(
-                              width: double.infinity,
-                              height: 65,
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(15),
-                                  border: Border.all(color: heavyGreyColor, width: 1)),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SvgPicture.asset(
-                                    "assets/icons/google.svg",
-                                    width: 25,
-                                  ),
-                                  const SizedBox(
-                                    width: 10,
-                                  ),
-                                  Text(
-                                    "Google",
-                                    style: TextStyle(
-                                        color: blackColor,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w600),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 10,
                             ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,

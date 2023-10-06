@@ -46,11 +46,16 @@ class AddPostPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const CircleAvatar(
-                        radius: 25,
-                        backgroundColor: Colors.transparent,
-                        backgroundImage: NetworkImage(
-                            "https://cdn-icons-png.flaticon.com/128/4333/4333609.png"),
+                      Container(
+                        width: 50,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: mainColor,
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(cubit.model!.gender! == "male" ? 13 : 7.5),
+                          child: Image.asset("assets/images/${cubit!.model!.image!}",fit: BoxFit.cover,),
+                        ),
                       ),
                       const SizedBox(
                         width: 10,

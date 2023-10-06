@@ -18,6 +18,14 @@ class DeleteDataState extends LoginStates{}
 
 class ChangeButtonIconState extends LoginStates{}
 
+class ChangeSchoolIdState extends LoginStates{}
+
+class ChangeGenderState extends LoginStates{}
+
+class UpdateDataSuccessfullyState extends LoginStates{}
+
+
+
 
 
 

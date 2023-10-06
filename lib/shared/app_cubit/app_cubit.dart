@@ -12,9 +12,11 @@ import 'package:nu_sources/models/file_model.dart';
 import 'package:nu_sources/shared/app_cubit/app_states.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../models/user_model.dart';
 import '../../modules/app_pages/AddPostPage.dart';
 import '../../modules/app_pages/FavoritePage.dart';
 import '../../modules/app_pages/HomePage.dart';
+import '../network/local/cache_helper.dart';
 import '../styles/icon_broken.dart';
 
 class AppCubit extends Cubit<AppStates> {
@@ -69,6 +71,39 @@ class AppCubit extends Cubit<AppStates> {
     });
   }
 
+  // User Functions..
+  UserModel? model;
+
+  Future<void> getUserData() async {
+    emit(GetUserLoadingState());
+    if (model == null) {
+      String? uId = CacheHelper.getStringData(key: "uId");
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uId)
+          .get()
+          .then((value) {
+        print(value.data());
+        model = UserModel.fromJson(value.data()!);
+        emit(GetUserSuccessfullyState());
+      }).catchError((error) {
+        print(error);
+      });
+    } else {
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(model?.uId)
+          .get()
+          .then((value) {
+        print(value.data());
+        model = UserModel.fromJson(value.data()!);
+        emit(GetUserSuccessfullyState());
+      }).catchError((error) {
+        print(error);
+      });
+    }
+  }
+
   //Courses Functions..
 
   List<CourseModel> allCourses = [];
@@ -105,16 +140,18 @@ class AppCubit extends Cubit<AppStates> {
     emit(GetTitlesSuccessfullyState());
   }
 
-  void getCourses() async {
+  Future<void> getCourses() async {
+    await getUserData();
     emit(LoadCoursesState());
     await FirebaseFirestore.instance
         .collection("schools")
-        .doc("2")
+        .doc(model!.school.toString())
         .collection("courses")
         .get()
         .then((value) {
       for (var element in value.docs) {
         allCourses.add(CourseModel.fromJson(element.data()));
+        print("all courses lenght: ${allCourses.length}");
       }
       emit(CoursesLoadedSuccessfullyState());
     });
@@ -153,7 +190,7 @@ class AppCubit extends Cubit<AppStates> {
   }
 
   CourseModel? getCourseCodes() {
-    if(courseCode!.contains("&")) {
+    if (courseCode!.contains("&")) {
       var text = courseCode!.split("&");
       print(text);
       for (var element in allCourses) {
@@ -162,7 +199,7 @@ class AppCubit extends Cubit<AppStates> {
           return element;
         }
       }
-    }else{
+    } else {
       for (var element in allCourses) {
         if (element.code!.contains(courseCode!.trim())) {
           return element;
@@ -172,73 +209,94 @@ class AppCubit extends Cubit<AppStates> {
   }
 
   CourseModel? currentCourse;
+
   Future<void> getCurrentCourseData(String courseID) async {
+    await getUserData();
     emit(GetCourseDataState());
     await FirebaseFirestore.instance
         .collection("schools")
-        .doc("2")
+        .doc(model!.school.toString())
         .collection("courses")
         .doc(courseID)
         .get()
         .then((value) {
       currentCourse = CourseModel.fromJson(value.data()!);
+      checkFavCourse(currentCourse!);
       emit(GetCourseDataSuccessfullyState());
     });
     getCurrentCourseFiles();
   }
 
-  Future<void> addCourseToFav(CourseModel model) async {
-    if(model.favorite == false){
-      CourseModel updatedCourseModel = CourseModel(
-          name: model.name,
-          id: model.id,
-          code: model.code,
-          code2: model.code2,
-          core: model.core,
-          favorite: true
-      );
-      await FirebaseFirestore.instance
-          .collection("schools")
-          .doc("2")
-          .collection("courses")
-          .doc(model.id)
-          .set(updatedCourseModel.toMap())
-          .then((value) {
-        print("course ${model.code} added to fav");
-      });
-      emit(AddCourseToFavSuccessfullyState());
-    }else{
-      CourseModel updatedCourseModel = CourseModel(
-          name: model.name,
-          id: model.id,
-          code: model.code,
-          code2: model.code2,
-          core: model.core,
-          favorite: false
-      );
-      await FirebaseFirestore.instance
-          .collection("schools")
-          .doc("2")
-          .collection("courses")
-          .doc(model.id)
-          .set(updatedCourseModel.toMap())
-          .then((value) {
-        print("course ${model.code} deleted to fav");
-      });
-      emit(DeleteCourseToFavSuccessfullyState());
+  bool? inFav = false;
+  Future<void> checkFavCourse(CourseModel courseModel) async {
+    await getFavCourses();
+    print(favCourses);
+    List list = [];
+    if(favCourses.isEmpty){
+      inFav = false;
     }
-  }
-
-  void getFavCourses() async {
-    getCourses();
-    await Future.delayed(const Duration(milliseconds: 300));
-    favCourses = [];
-    for(var element in allCourses){
-      if(element.favorite == true){
-        favCourses.add(element);
+    for(var item in favCourses){
+      if(item.id == courseModel.id){
+        list.add(item);
       }
     }
+    if(list.isNotEmpty){
+      inFav = true;
+      emit(CheckFavCourseState());
+    }else{
+      inFav = false;
+      emit(CheckFavCourseState());
+    }
+    print(list.first.id);
+    print(inFav);
+  }
+
+  Future<void> addCourseToFav(CourseModel courseModel) async {
+      await getUserData();
+      await FirebaseFirestore.instance
+          .collection("users")
+          .doc(model!.uId)
+          .collection("favorite courses")
+          .doc(courseModel.id)
+          .set(courseModel.toMap())
+          .then((value) {
+        print("course ${courseModel.code} added to fav");
+      });
+      emit(AddCourseToFavSuccessfullyState());
+      // emit(DeleteCourseToFavSuccessfullyState());
+  }
+
+  Future<void> delCourseToFav(CourseModel courseModel) async {
+    await getUserData();
+    await FirebaseFirestore.instance
+        .collection("users")
+        .doc(model!.uId)
+        .collection("favorite courses")
+        .doc(courseModel.id)
+        .delete()
+        .then((value) {
+      print("course ${courseModel.code} deleted from fav");
+    });
+    // emit(AddCourseToFavSuccessfullyState());
+    emit(DeleteCourseToFavSuccessfullyState());
+  }
+
+  Future<void> getFavCourses() async {
+    await getUserData();
+    favCourses =[];
+    await FirebaseFirestore.instance
+        .collection("users")
+        .doc(model!.uId)
+        .collection("favorite courses")
+        .get()
+        .then((value) {
+      for(var item in value.docs){
+        favCourses.add(CourseModel.fromJson(item.data()));
+      }
+      print("fav courses loaded");
+    });
     emit(AddCourseToFavListSuccessfullyState());
+    print(favCourses);
   }
 
   //Files Functions..
@@ -262,6 +320,7 @@ class AppCubit extends Cubit<AppStates> {
   }
 
   String fileURL = '';
+
   void uploadFile() {
     emit(UploadFileLoadingState());
     File mainFile = File(file.path!);
@@ -273,48 +332,45 @@ class AppCubit extends Cubit<AppStates> {
       value.ref.getDownloadURL().then((value2) {
         fileURL = value2;
         FileModel fileModel = FileModel(
-            id: "",
-            name: fileNameController.text,
-            fileUrl: fileURL,
-            courseCode: getCourseCodes()!.code,
-            courseCode2: getCourseCodes()!.code2,
-            author: "adham misallam",
-            likes: "0",
-            date: DateTime.now().toString(),
-            isVerifed: false,
-            isLiked: false
+          id: "",
+          name: fileNameController.text,
+          fileUrl: fileURL,
+          courseCode: getCourseCodes()!.code,
+          courseCode2: getCourseCodes()!.code2,
+          author: model!.name,
+          likes: [],
+          date: DateTime.now().toString(),
+          isVerifed: false,
         );
 
         FirebaseFirestore.instance
             .collection("schools")
-            .doc("2")
+            .doc(model!.school)
             .collection("courses")
             .doc(getCourseCodes()!.id)
             .collection("files")
             .add(fileModel.toMap())
             .then((DocumentReference doc) {
-              FileModel updatedFileModel = FileModel(
-                  id: doc.id,
-                  name: fileModel.name,
-                  fileUrl: fileModel.fileUrl,
-                  courseCode: fileModel.courseCode,
-                  courseCode2: fileModel.courseCode2,
-                  author: fileModel.author,
-                  likes: fileModel.likes,
-                  date: fileModel.date,
-                  isVerifed: fileModel.isVerifed,
-                  isLiked: fileModel.isLiked
-              );
+          FileModel updatedFileModel = FileModel(
+            id: doc.id,
+            name: fileModel.name,
+            fileUrl: fileModel.fileUrl,
+            courseCode: fileModel.courseCode,
+            courseCode2: fileModel.courseCode2,
+            author: fileModel.author,
+            likes: fileModel.likes,
+            date: fileModel.date,
+            isVerifed: fileModel.isVerifed,
+          );
           FirebaseFirestore.instance
               .collection("schools")
-              .doc("2")
+              .doc(model!.school)
               .collection("courses")
               .doc(getCourseCodes()!.id)
               .collection("files")
               .doc(doc.id)
               .set(updatedFileModel.toMap())
-              .then((value) => print("file with ${doc.id} added")
-          );
+              .then((value) => print("file with ${doc.id} added"));
         });
         emit(UploadFileSuccessfullyState());
       }).catchError((onError) {
@@ -328,10 +384,12 @@ class AppCubit extends Cubit<AppStates> {
   List<FileModel> allCourseFiles = [];
 
   Future<void> getCurrentCourseFiles() async {
+    await getUserData();
+    allCourseFiles = [];
     emit(GetCourseFilesLoadingState());
     await FirebaseFirestore.instance
         .collection("schools")
-        .doc("2")
+        .doc(model!.school.toString())
         .collection("courses")
         .doc(currentCourse!.id!)
         .collection("files")
@@ -345,85 +403,168 @@ class AppCubit extends Cubit<AppStates> {
   }
 
   FileModel? currentFile;
-  Future<void> getCurrentFileData(String courseID,String fileID) async {
+  bool? isLiked = false;
+
+  Future<void> getCurrentFileData(String courseID, String fileID) async {
+    await getUserData();
     emit(GetFileDataLoadingState());
     await FirebaseFirestore.instance
         .collection("schools")
-        .doc("2")
+        .doc(model!.school.toString())
         .collection("courses")
         .doc(courseID)
         .collection("files")
         .doc(fileID)
         .get()
-        .then((value) {
+        .then((value) async {
       currentFile = FileModel.fromJson(value.data()!);
+      await checkLikedFile(courseID,fileID);
       print(currentFile!.likes);
       emit(GetFileDataSuccessfullyState());
     });
   }
 
-  Future<void> likeFile(CourseModel course, FileModel file) async {
-    if(file.isLiked == false){
-      FileModel updatedFile = FileModel(
-          id: file.id,
-          name: file.name,
-          fileUrl: file.fileUrl,
-          courseCode: file.courseCode,
-          courseCode2: file.courseCode2,
-          author: file.author,
-          likes: "${int.parse(file!.likes!.toString()) + 1}",
-          date: file.date,
-          isVerifed: file.isVerifed,
-          isLiked: true
-      );
-      await FirebaseFirestore.instance
-          .collection("schools")
-          .doc("2")
-          .collection("courses")
-          .doc(course.id)
-          .collection("files")
-          .doc(file.id)
-          .set(updatedFile.toMap())
-          .then((value) {
-        print("course ${file.name} Liked");
-      });
-      emit(LikeFileState());
-    }else{
-      FileModel updatedFile = FileModel(
-          id: file.id,
-          name: file.name,
-          fileUrl: file.fileUrl,
-          courseCode: file.courseCode,
-          courseCode2: file.courseCode2,
-          author: file.author,
-          likes: "${int.parse(file!.likes!.toString()) - 1}",
-          date: file.date,
-          isVerifed: file.isVerifed,
-          isLiked: false
-      );
-      await FirebaseFirestore.instance
-          .collection("schools")
-          .doc("2")
-          .collection("courses")
-          .doc(course.id)
-          .collection("files")
-          .doc(file.id)
-          .set(updatedFile.toMap())
-          .then((value) {
-        print("course ${file.name} Disliked");
-      });
-      emit(DislikeFileState());
-    }
+  int getFileLikes(FileModel fileModel){
+    return fileModel.likes!.length;
   }
 
-  Future<File?> downloadFile(String url, String name) async{
+  // Future<void> getLikedFiles() async {
+  //   for(var i in allCourseFiles){
+  //     await FirebaseFirestore.instance
+  //         .collection("schools")
+  //         .doc(model!.school)
+  //         .collection("courses")
+  //         .doc(currentCourse!.id)
+  //         .collection("files")
+  //         .doc(i.id)
+  //         .collection("likes")
+  //         .get()
+  //         .then((value) {
+  //       for (var element in value.docs) {
+  //         if(element.)
+  //       }
+  //       emit(GetLikedFilesSuccessfullyState());
+  //     });
+  //   }
+  // }
+
+
+  Future<void> checkLikedFile(String courseID, String fileID) async {
+    await getUserData();
+    List list = [];
+    for (var element in currentFile!.likes!) {
+      if(element == model!.uId){
+        list.add(element);
+      }
+    }
+    if(list.isNotEmpty){
+      isLiked = true;
+      print(currentFile!.likes!.length);
+      emit(CheckLikedFileState());
+    }else{
+      print(currentFile!.likes!.length);
+      isLiked = false;
+      emit(CheckLikedFileState());
+    }
+    print(isLiked);
+  }
+
+  Future<void> likeFile(FileModel file) async {
+    await getUserData();
+    // FileModel updatedFile = FileModel(
+    //   id: file.id,
+    //   name: file.name,
+    //   fileUrl: file.fileUrl,
+    //   courseCode: file.courseCode,
+    //   courseCode2: file.courseCode2,
+    //   author: file.author,
+    //   likes: "${int.parse(file!.likes!.toString()) + 1}",
+    //   date: file.date,
+    //   isVerifed: file.isVerifed,
+    // );
+    // await FirebaseFirestore.instance
+    //     .collection("users")
+    //     .doc(model!.uId)
+    //     .collection("liked files")
+    //     .doc(file.id)
+    //     .set(updatedFile.toMap())
+    //     .then((value) {
+    //   print("course ${file.name} Liked");
+    //   FirebaseFirestore.instance
+    //       .collection("schools")
+    //       .doc(model!.school)
+    //       .collection("courses")
+    //       .doc(currentCourse!.id)
+    //       .collection("files")
+    //       .doc(file.id)
+    //       .set(updatedFile.toMap())
+    //       .then((value) => print("file with ${file.id} added"));
+    //   emit(LikeFileState());
+    // });
+    FirebaseFirestore.instance
+        .collection("schools")
+        .doc(model!.school)
+        .collection("courses")
+        .doc(currentCourse!.id)
+        .collection("files")
+        .doc(file.id)
+        .update({'likes': FieldValue.arrayUnion([model!.uId])})
+        .then((value) => print("file with ${file.id} added"));
+    emit(LikeFileState());
+  }
+
+  Future<void> dislikeFile(FileModel file) async {
+    await getUserData();
+    // FileModel updatedFile = FileModel(
+    //   id: file.id,
+    //   name: file.name,
+    //   fileUrl: file.fileUrl,
+    //   courseCode: file.courseCode,
+    //   courseCode2: file.courseCode2,
+    //   author: file.author,
+    //   likes: "${int.parse(file!.likes!.toString()) - 1}",
+    //   date: file.date,
+    //   isVerifed: file.isVerifed,
+    // );
+    // await FirebaseFirestore.instance
+    //     .collection("users")
+    //     .doc(model!.uId)
+    //     .collection("liked files")
+    //     .doc(file.id)
+    //     .delete()
+    //     .then((value) {
+    //   print("course ${file.name} Disliked");
+    //   FirebaseFirestore.instance
+    //       .collection("schools")
+    //       .doc(model!.school)
+    //       .collection("courses")
+    //       .doc(currentCourse!.id)
+    //       .collection("files")
+    //       .doc(file.id)
+    //       .set(updatedFile.toMap())
+    //       .then((value) => print("file with ${file.id} removed"));
+    //   emit(DislikeFileState());
+    // });
+    FirebaseFirestore.instance
+        .collection("schools")
+        .doc(model!.school)
+        .collection("courses")
+        .doc(currentCourse!.id)
+        .collection("files")
+        .doc(file.id)
+        .update({'likes': FieldValue.arrayRemove([model!.uId])})
+        .then((value) => print("file with ${file.id} deleted"));
+    emit(DislikeFileState());
+  }
+
+  Future<File?> downloadFile(String url, String name) async {
     final appStorage = await getApplicationDocumentsDirectory();
     final file = File('${appStorage.path}/$name');
 
     print(file.path);
 
     final response = await Dio().get(
-        url,
+      url,
       options: Options(
         responseType: ResponseType.bytes,
         followRedirects: false,
@@ -437,7 +578,7 @@ class AppCubit extends Cubit<AppStates> {
     return file;
   }
 
-  String getDate(String timeX){
+  String getDate(String timeX) {
     ////file date
     var timeAllFile = timeX.split(" ");
     var timeDateFile = timeAllFile.first;
@@ -458,25 +599,25 @@ class AppCubit extends Cubit<AppStates> {
     var hourNow = timeClockNow.split(":").first;
     var minNow = timeClockNow.split(":")[1];
 
-    if(yearNow == yearFile){
-      if(monthNow == monthFile){
-        if(dayNow == dayFile){
-          if(hourNow == hourFile){
-            if(minNow == minFile){
+    if (yearNow == yearFile) {
+      if (monthNow == monthFile) {
+        if (dayNow == dayFile) {
+          if (hourNow == hourFile) {
+            if (minNow == minFile) {
               return "Just Now!";
-            }else{
+            } else {
               return "${int.parse(minNow) - int.parse(minFile)} Minutes ago";
             }
-          }else{
+          } else {
             return "${int.parse(hourNow) - int.parse(hourFile)} Hours ago";
           }
-        }else{
+        } else {
           return "${int.parse(dayNow) - int.parse(dayFile)} Days ago";
         }
-      }else{
+      } else {
         return "${int.parse(monthNow) - int.parse(monthFile)} Months ago";
       }
-    }else{
+    } else {
       return "${int.parse(yearNow) - int.parse(yearFile)} Years ago";
     }
   }

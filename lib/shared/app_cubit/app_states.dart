@@ -35,6 +35,8 @@ class EditRecentlyCoursesState extends AppStates{
   EditRecentlyCoursesState(this.recentlyCourses);
 }
 
+class CheckFavCourseState extends AppStates{}
+
 // Files States
 
 class UploadFileLoadingState extends AppStates{}
@@ -62,3 +64,13 @@ class GetFileDataSuccessfullyState extends AppStates{}
 class LikeFileState extends AppStates{}
 
 class DislikeFileState extends AppStates{}
+
+class GetLikedFilesSuccessfullyState extends AppStates{}
+
+class CheckLikedFileState extends AppStates{}
+
+// User States
+
+class GetUserLoadingState extends AppStates{}
+
+class GetUserSuccessfullyState extends AppStates{}

@@ -123,7 +123,7 @@ class _FilePageState extends State<FilePage> {
                             dotThirdColor: MathColor,
                             dotLastColor: mainColor,
                           ),
-                          isLiked: cubit.currentFile!.isLiked,
+                          isLiked: cubit.isLiked,
                           likeBuilder: (bool isLiked){
                             return isLiked ? Center(
                               child: Container(
@@ -135,7 +135,7 @@ class _FilePageState extends State<FilePage> {
                                 ), child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text(fileModel!.likes!.toString(),style: TextStyle(color: whiteColor,fontSize: 20,fontFamily: "LeagueSpartan"),).animate().fade(delay: const Duration(milliseconds: 100)).slide(),
+                                  Text(cubit.getFileLikes(cubit.currentFile!).toString(),style: TextStyle(color: whiteColor,fontSize: 20,fontFamily: "LeagueSpartan"),).animate().fade(delay: const Duration(milliseconds: 100)).slide(),
                                   const SizedBox(width: 10,),
                                   Icon(MyFlutterApp.thumbs_up,color: whiteColor,),
                                 ],
@@ -153,7 +153,7 @@ class _FilePageState extends State<FilePage> {
                                 ), child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text(cubit.currentFile!.likes!,style: TextStyle(color: mainColor,fontSize: 20,fontFamily: "LeagueSpartan"),).animate().fade(delay: const Duration(milliseconds: 100)).slide(),
+                                  Text(cubit.getFileLikes(cubit.currentFile!).toString(),style: TextStyle(color: mainColor,fontSize: 20,fontFamily: "LeagueSpartan"),).animate().fade(delay: const Duration(milliseconds: 100)).slide(),
                                   const SizedBox(width: 10,),
                                   Icon(MyFlutterApp.thumbs_up_alt,color: mainColor,),
                                 ],
@@ -162,14 +162,14 @@ class _FilePageState extends State<FilePage> {
                             );
                           },
                           onTap: (v) async{
-                            if(cubit.currentFile!.isLiked!){
-                              cubit.likeFile(cubit.currentCourse!,cubit.currentFile!);
-                              AppCubit.get(context).getCurrentFileData(courseModel!.id!, fileModel!.id!);
-                              return false;
+                            if(cubit.isLiked!){
+                              await cubit.dislikeFile(cubit.currentFile!);
+                              await cubit.getCurrentFileData(courseModel!.id!, fileModel!.id!);
+                              return cubit.isLiked;
                             }else{
-                              cubit.likeFile(cubit.currentCourse!,cubit.currentFile!);
-                              AppCubit.get(context).getCurrentFileData(courseModel!.id!,fileModel!.id!);
-                              return true;
+                              await cubit.likeFile(cubit.currentFile!);
+                              await cubit.getCurrentFileData(courseModel!.id!, fileModel!.id!);
+                              return cubit.isLiked;
                             }
                           },
                         ),
